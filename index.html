@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LED ON/OFF</title>
+<style>
+  body { font-family: sans-serif; text-align: center; padding: 40px; }
+  .row { font-size: 2rem; margin: 20px 0; }
+  button { font-size: 1.2rem; padding: 10px 24px; margin: 0 6px; cursor: pointer; }
+  #status { margin-top: 24px; color: #555; }
+</style>
+</head>
+<body>
+  <h1>Kontrol LED via ThingSpeak</h1>
+  <div class="row">LED 1 = <button onclick="setLed(1,1)">ON</button><button onclick="setLed(1,0)">OFF</button></div>
+  <div class="row">LED 2 = <button onclick="setLed(2,1)">ON</button><button onclick="setLed(2,0)">OFF</button></div>
+  <p id="status">Status: -</p>
+
+<script>
+  const WRITE_KEY = "WRITE_API_KEY"; // ganti
+  const state = { 1: 0, 2: 0 };      // kirim kedua field sekaligus agar tidak ada nilai null
+
+  async function setLed(field, val) {
+    state[field] = val;
+    const url = `https://api.thingspeak.com/update?api_key=${WRITE_KEY}&field1=${state[1]}&field2=${state[2]}`;
+    const el = document.getElementById("status");
+    try {
+      const res = await fetch(url);
+      const entry = await res.text();
+      el.textContent = entry === "0"
+        ? "Ditolak ThingSpeak, tunggu 15 detik lalu coba lagi"
+        : `Terkirim (entry #${entry}): LED1=${state[1]}, LED2=${state[2]}`;
+    } catch (e) {
+      el.textContent = "Gagal terhubung ke ThingSpeak";
+    }
+  }
+</script>
+</body>
+</html>
